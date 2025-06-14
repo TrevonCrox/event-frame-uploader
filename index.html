@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Event Frame Uploader</title>
   <style>
     body {
@@ -17,7 +17,6 @@
     }
     canvas {
       border-radius: 50%;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
     }
     input[type="file"] {
       margin-top: 10px;
@@ -32,7 +31,7 @@
 </head>
 <body>
   <h2>Upload Your Photo to Join the Event!</h2>
-  <input type="file" id="upload" accept="image/*" />
+  <input type="file" id="upload" accept="image/*">
   <div id="canvasContainer">
     <canvas id="canvas" width="600" height="600"></canvas>
   </div>
@@ -45,38 +44,34 @@
     const downloadBtn = document.getElementById("downloadBtn");
 
     const frameImage = new Image();
-    frameImage.src = "frame.png"; // Replace with your actual frame path
-
-    function drawFinalImage(userImage) {
-      // Clear canvas
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Draw circular cropped user image
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(canvas.width / 2, canvas.height / 2, 250, 0, Math.PI * 2, true);
-      ctx.closePath();
-      ctx.clip();
-      ctx.drawImage(userImage, 50, 50, 500, 500); // Adjust as needed
-      ctx.restore();
-
-      // Draw the frame image on top
-      ctx.drawImage(frameImage, 0, 0, 600, 600);
-    }
+    frameImage.src = "frame.png"; // Replace with your circular frame PNG path (transparent center)
 
     upload.addEventListener("change", function (e) {
       const file = e.target.files[0];
       if (!file) return;
-
       const reader = new FileReader();
+
       reader.onload = function (event) {
         const userImage = new Image();
         userImage.onload = function () {
-          if (frameImage.complete) {
-            drawFinalImage(userImage);
-          } else {
-            frameImage.onload = () => drawFinalImage(userImage);
-          }
+          // Clear canvas
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+          // Draw user image cropped into a circle
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(canvas.width/2, canvas.height/2, 250, 0, Math.PI * 2, true);
+          ctx.closePath();
+          ctx.clip();
+
+          ctx.drawImage(userImage, 50, 50, 500, 500); // position + size adjust as needed
+          ctx.restore();
+
+          // Draw frame image on top
+          frameImage.onload = () => {
+            ctx.drawImage(frameImage, 0, 0, 600, 600);
+          };
+          ctx.drawImage(frameImage, 0, 0, 600, 600);
         };
         userImage.src = event.target.result;
       };
@@ -86,7 +81,7 @@
     downloadBtn.addEventListener("click", () => {
       const link = document.createElement("a");
       link.download = "my-event-dp.png";
-      link.href = canvas.toDataURL("image/png");
+      link.href = canvas.toDataURL();
       link.click();
     });
   </script>
