@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Event Frame Uploader</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f8f9fa;
+      padding: 20px;
+    }
+    #canvasContainer {
+      margin: 20px auto;
+      position: relative;
+    }
+    canvas {
+      border-radius: 50%;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+    input[type="file"] {
+      margin-top: 10px;
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h2>Upload Your Photo to Join the Event!</h2>
+  <input type="file" id="upload" accept="image/*" />
+  <div id="canvasContainer">
+    <canvas id="canvas" width="600" height="600"></canvas>
+  </div>
+  <button id="downloadBtn">Download Your Frame</button>
+
+  <script>
+    const upload = document.getElementById("upload");
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const downloadBtn = document.getElementById("downloadBtn");
+
+    const frameImage = new Image();
+    frameImage.src = "frame.png"; // Replace with your actual frame path
+
+    function drawFinalImage(userImage) {
+      // Clear canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw circular cropped user image
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(canvas.width / 2, canvas.height / 2, 250, 0, Math.PI * 2, true);
+      ctx.closePath();
+      ctx.clip();
+      ctx.drawImage(userImage, 50, 50, 500, 500); // Adjust as needed
+      ctx.restore();
+
+      // Draw the frame image on top
+      ctx.drawImage(frameImage, 0, 0, 600, 600);
+    }
+
+    upload.addEventListener("change", function (e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function (event) {
+        const userImage = new Image();
+        userImage.onload = function () {
+          if (frameImage.complete) {
+            drawFinalImage(userImage);
+          } else {
+            frameImage.onload = () => drawFinalImage(userImage);
+          }
+        };
+        userImage.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    downloadBtn.addEventListener("click", () => {
+      const link = document.createElement("a");
+      link.download = "my-event-dp.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    });
+  </script>
+</body>
+</html>
